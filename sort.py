@@ -124,7 +124,71 @@ def insertion_sort(draw_info, ascending=True):
 			yield True
 
 	return lst
+def merge_sort(draw_info, ascending=True):
+    lst = draw_info.lst
 
+    def merge(left, right):
+        result = []
+        i = j = 0
+        while i < len(left) and j < len(right):
+            if (left[i] <= right[j] and ascending) or (left[i] >= right[j] and not ascending):
+                result.append(left[i])
+                i += 1
+            else:
+                result.append(right[j])
+                j += 1
+        result.extend(left[i:])
+        result.extend(right[j:])
+        return result
+
+    def merge_sort_recursive(arr):
+        if len(arr) <= 1:
+            return arr
+        mid = len(arr) // 2
+        left = merge_sort_recursive(arr[:mid])
+        right = merge_sort_recursive(arr[mid:])
+        merged = merge(left, right)
+        return merged
+
+    sorted_lst = merge_sort_recursive(lst)
+    draw_info.set_list(sorted_lst)
+    draw_list(draw_info, clear_bg=True)
+    yield True
+
+    return sorted_lst
+
+
+
+def quick_sort(draw_info, ascending=True):
+    lst = draw_info.lst
+
+    def partition(arr, low, high):
+        pivot = arr[high]
+        i = low - 1
+        for j in range(low, high):
+            if (arr[j] <= pivot and ascending) or (arr[j] >= pivot and not ascending):
+                i += 1
+                arr[i], arr[j] = arr[j], arr[i]
+                draw_list(draw_info, {i: draw_info.GREEN, j: draw_info.RED}, True)
+                yield True
+        arr[i + 1], arr[high] = arr[high], arr[i + 1]
+        draw_list(draw_info, {i + 1: draw_info.GREEN, high: draw_info.RED}, True)
+        yield True
+        return i + 1
+
+    def quick_sort_recursive(arr, low, high):
+        if low < high:
+            pi = yield from partition(arr, low, high)
+            yield from quick_sort_recursive(arr, low, pi - 1)
+            yield from quick_sort_recursive(arr, pi + 1, high)
+
+    sorted_lst = lst.copy()
+    yield from quick_sort_recursive(sorted_lst, 0, len(sorted_lst) - 1)
+    draw_info.set_list(sorted_lst)
+    draw_list(draw_info, clear_bg=True)
+    yield True
+
+    return sorted_lst
 
 def main():
 	run = True
@@ -178,6 +242,13 @@ def main():
 			elif event.key == pygame.K_b and not sorting:
 				sorting_algorithm = bubble_sort
 				sorting_algo_name = "Bubble Sort"
+			elif event.key == pygame.K_m and not sorting:
+				sorting_algorithm = merge_sort
+				sorting_algo_name = "Merge Sort"
+			elif event.key == pygame.K_q and not sorting:
+				sorting_algorithm = quick_sort
+				sorting_algo_name = "Quick Sort"
+
 
 
 	pygame.quit()
